@@ -4,18 +4,18 @@
  */
 
 .steil-cfg {
-	--steil-ink: #1c1b1a;
-	--steil-accent: #1c1b1a;
-	--steil-muted: #6b6b72;
+	--steil-ink: #111114;
+	--steil-accent: #111114;
+	--steil-muted: #70707a;
 	--steil-surface: #ffffff;
-	--steil-surface-2: #f6f6f4;
-	--steil-stage: var( --steil-surface-2 );
-	--steil-line: rgba( 0, 0, 0, 0.1 );
-	--steil-radius: 16px;
+	--steil-surface-2: #f3f3f1;
+	--steil-stage: #f3f3f1;
+	--steil-line: rgba( 17, 17, 20, 0.12 );
+	--steil-radius: 14px;
 	--steil-btn-radius: 10px;
-	--steil-gap: 28px;
-	--steil-panel-w: 300px;
-	--steil-shadow: 0 1px 2px rgba( 0, 0, 0, 0.04 ), 0 8px 24px rgba( 0, 0, 0, 0.06 );
+	--steil-gap: 32px;
+	--steil-panel-w: 320px;
+	--steil-shadow: 0 1px 2px rgba( 17, 17, 20, 0.05 ), 0 12px 32px rgba( 17, 17, 20, 0.07 );
 
 	display: flex;
 	gap: var( --steil-gap );
@@ -25,6 +25,7 @@
 	font-size: 15px;
 	line-height: 1.5;
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 
 	* {
 		box-sizing: border-box;
@@ -94,10 +95,10 @@
 	&__panel {
 		display: flex;
 		flex-direction: column;
-		gap: 22px;
+		gap: 24px;
 		align-self: center;
 		width: 100%;
-		padding: 24px;
+		padding: 28px;
 		background: var( --steil-surface );
 		border: 1px solid var( --steil-line );
 		border-radius: var( --steil-radius );
@@ -164,9 +165,9 @@
 	}
 
 	&__label {
-		font-weight: 600;
-		font-size: 0.78rem;
-		letter-spacing: 0.06em;
+		font-weight: 700;
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var( --steil-muted );
 	}
