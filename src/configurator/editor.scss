@@ -20,10 +20,14 @@
 	}
 
 	.steil-cfg-editor-icon {
-		font-size: 34px;
 		width: 34px;
 		height: 34px;
 		opacity: 0.6;
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
 	}
 
 	p {

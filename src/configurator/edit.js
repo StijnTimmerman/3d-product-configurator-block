@@ -14,6 +14,8 @@ import {
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
+import icon from './icon';
+
 export default function Edit( { attributes, setAttributes } ) {
 	const { productId, height, showFinish, showReset, enableQuote, controlsPosition } =
 		attributes;
@@ -111,7 +113,7 @@ export default function Edit( { attributes, setAttributes } ) {
 
 			<div { ...blockProps }>
 				<div className="steil-cfg-editor-inner">
-					<span className="steil-cfg-editor-icon dashicons dashicons-art" />
+					<span className="steil-cfg-editor-icon">{ icon }</span>
 					<strong>{ __( 'Steil 3D Configurator', 'steil-3d-configurator' ) }</strong>
 					{ selected ? (
 						<p>
