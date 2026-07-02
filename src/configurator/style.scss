@@ -353,10 +353,18 @@
 
 /* ---- quote modal (overlay — never reflows the configurator) ---- */
 .steil-cfg__modal {
-	/* Re-declare tokens: the modal is appended to <body>, outside .steil-cfg. */
-	--steil-ink: #1c1b1a;
-	--steil-line: rgba( 0, 0, 0, 0.1 );
-	--steil-surface-2: #f6f6f4;
+	/* Re-declare tokens: the modal is appended to <body>, outside .steil-cfg.
+	   The block copies any per-block overrides onto this element inline, so
+	   these are just the defaults. */
+	--steil-ink: #111114;
+	--steil-accent: #111114;
+	--steil-muted: #70707a;
+	--steil-surface: #ffffff;
+	--steil-surface-2: #f3f3f1;
+	--steil-line: rgba( 17, 17, 20, 0.12 );
+	--steil-radius: 14px;
+	--steil-btn-radius: 10px;
+	--steil-shadow: 0 1px 2px rgba( 17, 17, 20, 0.05 ), 0 12px 32px rgba( 17, 17, 20, 0.07 );
 
 	position: fixed;
 	inset: 0;

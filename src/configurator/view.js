@@ -214,6 +214,27 @@ function openQuoteForm( root, data, engine ) {
 	}
 
 	const overlay = el( 'div', 'steil-cfg__modal' );
+	// The modal lives on <body>, outside the block, so copy the block's styling
+	// tokens (including any per-block CMS overrides) onto it so it matches.
+	const styleTokens = [
+		'--steil-ink',
+		'--steil-accent',
+		'--steil-muted',
+		'--steil-surface',
+		'--steil-surface-2',
+		'--steil-line',
+		'--steil-radius',
+		'--steil-btn-radius',
+		'--steil-shadow',
+	];
+	const rootStyle = window.getComputedStyle( root );
+	styleTokens.forEach( ( name ) => {
+		const value = rootStyle.getPropertyValue( name ).trim();
+		if ( value ) {
+			overlay.style.setProperty( name, value );
+		}
+	} );
+
 	const dialog = el( 'div', 'steil-cfg__dialog' );
 	dialog.setAttribute( 'role', 'dialog' );
 	dialog.setAttribute( 'aria-modal', 'true' );
