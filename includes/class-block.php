@@ -58,6 +58,7 @@ class Block {
 						'loading'       => __( 'Loading 3D model…', 'steil-3d-configurator' ),
 						'loadError'     => __( 'The 3D model could not be loaded.', 'steil-3d-configurator' ),
 						'yourSelection' => __( 'Your selection', 'steil-3d-configurator' ),
+						'notIncluded'   => __( 'Not included', 'steil-3d-configurator' ),
 					),
 				)
 			);

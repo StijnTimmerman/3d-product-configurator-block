@@ -27,12 +27,12 @@
 		align-items: stretch;
 
 		.steil-cfg__stage {
-			flex: 1 1 58%;
+			flex: 1 1 auto;
 			min-width: 0;
 		}
 		.steil-cfg__panel {
-			flex: 0 0 340px;
-			max-width: 340px;
+			flex: 0 0 300px;
+			max-width: 300px;
 		}
 	}
 
@@ -99,6 +99,58 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+
+		&.is-off .steil-cfg__swatches {
+			opacity: 0.4;
+			pointer-events: none;
+		}
+	}
+
+	&__row-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	/* ---- optional-part on/off switch ---- */
+	&__toggle {
+		position: relative;
+		flex: 0 0 auto;
+		width: 40px;
+		height: 22px;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: var( --steil-line );
+		cursor: pointer;
+		transition: background 0.18s ease;
+
+		&::after {
+			content: "";
+			position: absolute;
+			top: 2px;
+			left: 2px;
+			width: 18px;
+			height: 18px;
+			border-radius: 50%;
+			background: #fff;
+			box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.25 );
+			transition: transform 0.18s ease;
+		}
+
+		&:focus-visible {
+			outline: 2px solid var( --steil-ink );
+			outline-offset: 2px;
+		}
+
+		&.is-on {
+			background: var( --steil-ink );
+
+			&::after {
+				transform: translateX( 18px );
+			}
+		}
 	}
 
 	&__label {

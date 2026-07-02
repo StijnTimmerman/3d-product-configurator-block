@@ -18,6 +18,10 @@
 		}
 	},
 	"attributes": {
+		"align": {
+			"type": "string",
+			"default": "wide"
+		},
 		"productId": {
 			"type": "number",
 			"default": 0

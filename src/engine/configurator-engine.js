@@ -70,10 +70,13 @@ export function createConfigurator( canvas, config ) {
 			? config.defaultFinish
 			: finishKeys[ 0 ] || 'matte';
 
-	const state = { parts: {}, finish: defaultFinish };
+	const initialVisible = ( p ) => ( p.optional ? p.default_on !== false : true );
+
+	const state = { parts: {}, finish: defaultFinish, visible: {} };
 	parts.forEach( ( p ) => {
 		state.parts[ p.key ] =
 			p.default || ( p.palette[ 0 ] && p.palette[ 0 ].name ) || '';
+		state.visible[ p.key ] = initialVisible( p );
 	} );
 
 	const listeners = new Set();
@@ -81,6 +84,7 @@ export function createConfigurator( canvas, config ) {
 	const getState = () => ( {
 		parts: { ...state.parts },
 		finish: state.finish,
+		visible: { ...state.visible },
 	} );
 
 	const renderer = new THREE.WebGLRenderer( {
@@ -110,6 +114,14 @@ export function createConfigurator( canvas, config ) {
 	const controls = new OrbitControls( camera, canvas );
 	controls.enableDamping = true;
 	controls.enablePan = false;
+	controls.maxPolarAngle = Math.PI / 2 - 0.03;
+
+	// Auto-framing keeps the model fitted as the canvas is sized/resized, but
+	// stops fighting the visitor the moment they grab the model.
+	let userInteracted = false;
+	controls.addEventListener( 'start', () => {
+		userInteracted = true;
+	} );
 
 	scene.add( new THREE.HemisphereLight( 0xffffff, 0x9a9aa5, 0.35 ) );
 	const key = new THREE.DirectionalLight( 0xffffff, 2.1 );
@@ -128,8 +140,16 @@ export function createConfigurator( canvas, config ) {
 	scene.add( ground );
 
 	// One shared material per part; meshes of a part point at it so a single
-	// colour/finish change updates every mesh.
+	// colour/finish change updates every mesh. partMeshes tracks the meshes so
+	// a whole part can be shown/hidden.
 	const partMaterials = {};
+	const partMeshes = {};
+
+	const applyVisible = ( partKey, on ) => {
+		( partMeshes[ partKey ] || [] ).forEach( ( mesh ) => {
+			mesh.visible = on;
+		} );
+	};
 	const makeMaterial = ( part, source ) => {
 		const mat = new THREE.MeshStandardMaterial( {
 			color: colourOf( part, state.parts[ part.key ] ),
@@ -155,7 +175,11 @@ export function createConfigurator( canvas, config ) {
 		};
 	}
 
-	function frameModel( object ) {
+	// Framing data, filled once the model is centred on the ground.
+	let frameData = null;
+	const FIT_MARGIN = 1.2; // Breathing room around the model.
+
+	function centreAndMeasure( object ) {
 		const box = new THREE.Box3().setFromObject( object );
 		const size = box.getSize( new THREE.Vector3() );
 		const center = box.getCenter( new THREE.Vector3() );
@@ -165,14 +189,31 @@ export function createConfigurator( canvas, config ) {
 		object.position.z -= center.z;
 		object.position.y -= box.min.y;
 
-		const radius = Math.max( size.x, size.y, size.z ) * 0.5 || 1;
-		const dist = radius / Math.sin( ( camera.fov * Math.PI ) / 360 );
+		const sphere = box.getBoundingSphere( new THREE.Sphere() );
+		frameData = {
+			radius: sphere.radius || 1,
+			target: new THREE.Vector3( 0, size.y * 0.5, 0 ),
+			dir: new THREE.Vector3( 0.55, 0.4, 1 ).normalize(),
+		};
+	}
 
-		controls.target.set( 0, size.y * 0.5, 0 );
-		camera.position.set( dist * 0.7, size.y * 0.65 + radius * 0.4, dist * 0.95 );
-		controls.minDistance = radius * 0.9;
-		controls.maxDistance = dist * 3;
-		controls.maxPolarAngle = Math.PI / 2 - 0.03;
+	// Position the camera so the whole model fits. A wide canvas is limited by
+	// the vertical FOV, a tall one by the horizontal FOV — fit to whichever is
+	// tighter, using the bounding sphere so no orientation clips.
+	function fitCamera() {
+		if ( ! frameData ) {
+			return;
+		}
+		const { radius, target, dir } = frameData;
+		const vFov = ( camera.fov * Math.PI ) / 180;
+		const hFov = 2 * Math.atan( Math.tan( vFov / 2 ) * camera.aspect );
+		const fitFov = Math.min( vFov, hFov );
+		const dist = ( radius / Math.sin( fitFov / 2 ) ) * FIT_MARGIN;
+
+		controls.target.copy( target );
+		camera.position.copy( target ).add( dir.clone().multiplyScalar( dist ) );
+		controls.minDistance = radius * 0.6;
+		controls.maxDistance = dist * 4;
 		controls.update();
 	}
 
@@ -186,6 +227,11 @@ export function createConfigurator( canvas, config ) {
 			renderer.setSize( w, h, false );
 			camera.aspect = w / h;
 			camera.updateProjectionMatrix();
+			// Refit while the visitor hasn't taken control (covers the initial
+			// 0-size → real-size step and the block being widened).
+			if ( ! userInteracted ) {
+				fitCamera();
+			}
 		}
 	};
 
@@ -215,10 +261,15 @@ export function createConfigurator( canvas, config ) {
 					);
 				}
 				node.material = partMaterials[ part.key ];
+				( partMeshes[ part.key ] ||
+					( partMeshes[ part.key ] = [] ) ).push( node );
 			}
 		} );
+		// Apply the initial per-part visibility (optional parts may start off).
+		parts.forEach( ( p ) => applyVisible( p.key, state.visible[ p.key ] ) );
 		scene.add( model );
-		frameModel( model );
+		centreAndMeasure( model );
+		fitCamera();
 		tick();
 		return api;
 	} );
@@ -246,13 +297,22 @@ export function createConfigurator( canvas, config ) {
 			);
 			emit();
 		},
+		setVisible( partKey, on ) {
+			if ( ! ( partKey in state.visible ) ) {
+				return;
+			}
+			state.visible[ partKey ] = !! on;
+			applyVisible( partKey, !! on );
+			emit();
+		},
 		reset() {
-			parts.forEach( ( p ) =>
+			parts.forEach( ( p ) => {
 				this.setColor(
 					p.key,
 					p.default || ( p.palette[ 0 ] && p.palette[ 0 ].name )
-				)
-			);
+				);
+				this.setVisible( p.key, initialVisible( p ) );
+			} );
 			this.setFinish( defaultFinish );
 		},
 		getState,

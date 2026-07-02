@@ -236,11 +236,13 @@ class Product_Store {
 					}
 				}
 				$out['parts'][] = array(
-					'key'     => sanitize_key( $part['key'] ),
-					'label'   => sanitize_text_field( isset( $part['label'] ) ? $part['label'] : $part['key'] ),
-					'match'   => $match,
-					'palette' => $palette,
-					'default' => sanitize_text_field( isset( $part['default'] ) ? $part['default'] : '' ),
+					'key'        => sanitize_key( $part['key'] ),
+					'label'      => sanitize_text_field( isset( $part['label'] ) ? $part['label'] : $part['key'] ),
+					'match'      => $match,
+					'palette'    => $palette,
+					'default'    => sanitize_text_field( isset( $part['default'] ) ? $part['default'] : '' ),
+					'optional'   => ! empty( $part['optional'] ),
+					'default_on' => ! isset( $part['default_on'] ) || (bool) $part['default_on'],
 				);
 			}
 		}

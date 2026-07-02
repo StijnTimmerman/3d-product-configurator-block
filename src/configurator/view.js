@@ -26,8 +26,40 @@ function buildPanel( root, data, engine ) {
 	// One row per configurable part.
 	cfg.parts.forEach( ( part ) => {
 		const row = el( 'div', 'steil-cfg__row' );
-		row.appendChild( el( 'span', 'steil-cfg__label', part.label ) );
+		const header = el( 'div', 'steil-cfg__row-head' );
+		header.appendChild( el( 'span', 'steil-cfg__label', part.label ) );
 		const swatches = el( 'div', 'steil-cfg__swatches' );
+
+		// Optional parts get an on/off switch; when off the part is hidden and
+		// its swatches are disabled.
+		const reflectVisible = ( on ) => {
+			row.classList.toggle( 'is-off', ! on );
+			swatches
+				.querySelectorAll( '.steil-cfg__swatch' )
+				.forEach( ( s ) => {
+					s.disabled = ! on;
+				} );
+		};
+
+		if ( part.optional ) {
+			const on = engine.getState().visible[ part.key ] !== false;
+			const toggle = el( 'button', 'steil-cfg__toggle' );
+			toggle.type = 'button';
+			toggle.setAttribute( 'role', 'switch' );
+			toggle.setAttribute( 'aria-checked', on ? 'true' : 'false' );
+			toggle.setAttribute( 'aria-label', part.label );
+			toggle.classList.toggle( 'is-on', on );
+			toggle.addEventListener( 'click', () => {
+				const next = ! toggle.classList.contains( 'is-on' );
+				engine.setVisible( part.key, next );
+				toggle.classList.toggle( 'is-on', next );
+				toggle.setAttribute( 'aria-checked', next ? 'true' : 'false' );
+				reflectVisible( next );
+			} );
+			header.appendChild( toggle );
+		}
+
+		row.appendChild( header );
 
 		part.palette.forEach( ( swatch ) => {
 			const btn = el( 'button', 'steil-cfg__swatch' );
@@ -48,6 +80,9 @@ function buildPanel( root, data, engine ) {
 			swatches.appendChild( btn );
 		} );
 		row.appendChild( swatches );
+		if ( part.optional ) {
+			reflectVisible( engine.getState().visible[ part.key ] !== false );
+		}
 		panel.appendChild( row );
 	} );
 
@@ -106,6 +141,10 @@ function currentSelection( data, engine ) {
 	const state = engine.getState();
 	const selection = {};
 	data.config.parts.forEach( ( part ) => {
+		if ( part.optional && state.visible[ part.key ] === false ) {
+			selection[ part.label ] = t( 'notIncluded', 'Not included' );
+			return;
+		}
 		selection[ part.label ] = state.parts[ part.key ];
 	} );
 	const finish =

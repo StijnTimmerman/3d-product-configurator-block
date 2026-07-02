@@ -292,6 +292,8 @@ function init() {
 				match: [],
 				palette: [ { name: 'Default', hex: '#999999' } ],
 				default: 'Default',
+				optional: false,
+				default_on: true,
 			} );
 			render();
 		} );
@@ -371,6 +373,38 @@ function init() {
 		sel.addEventListener( 'change', () => { part.default = sel.value; sync(); } );
 		def.appendChild( sel );
 		card.appendChild( def );
+
+		// Optional part: visitors can toggle it on/off in the configurator.
+		const opts = el( 'div', 'steil-pe__row steil-pe__optional' );
+
+		const optionalLabel = el( 'label' );
+		const optionalCb = el( 'input' );
+		optionalCb.type = 'checkbox';
+		optionalCb.checked = !! part.optional;
+		optionalLabel.append(
+			optionalCb,
+			document.createTextNode( ' ' + __( 'Optional (visitor can turn it off)', 'steil-3d-configurator' ) )
+		);
+
+		const defaultOnLabel = el( 'label' );
+		const defaultOnCb = el( 'input' );
+		defaultOnCb.type = 'checkbox';
+		defaultOnCb.checked = part.default_on !== false;
+		defaultOnCb.disabled = ! part.optional;
+		defaultOnLabel.append(
+			defaultOnCb,
+			document.createTextNode( ' ' + __( 'Shown by default', 'steil-3d-configurator' ) )
+		);
+
+		optionalCb.addEventListener( 'change', () => {
+			part.optional = optionalCb.checked;
+			defaultOnCb.disabled = ! optionalCb.checked;
+			sync();
+		} );
+		defaultOnCb.addEventListener( 'change', () => { part.default_on = defaultOnCb.checked; sync(); } );
+
+		opts.append( optionalLabel, defaultOnLabel );
+		card.appendChild( opts );
 
 		return card;
 	}
