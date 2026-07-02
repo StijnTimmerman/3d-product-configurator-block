@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Steil 3D Configurator
  * Description:       Show an interactive 3D product, let visitors choose colours per part and a finish, and request a quote. Upload your own GLB or FBX model.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Steil Digital
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'STEIL_CFG_VERSION', '1.0.0' );
+define( 'STEIL_CFG_VERSION', '1.0.1' );
 define( 'STEIL_CFG_FILE', __FILE__ );
 define( 'STEIL_CFG_DIR', plugin_dir_path( __FILE__ ) );
 define( 'STEIL_CFG_URL', plugin_dir_url( __FILE__ ) );
