@@ -4,18 +4,18 @@
  */
 
 .steil-cfg {
-	--steil-ink: #111114;
-	--steil-accent: #111114;
-	--steil-muted: #70707a;
+	--steil-ink: #101828;
+	--steil-accent: #e40014;
+	--steil-muted: #4a5565;
 	--steil-surface: #ffffff;
-	--steil-surface-2: #f3f3f1;
-	--steil-stage: #f3f3f1;
-	--steil-line: rgba( 17, 17, 20, 0.12 );
+	--steil-surface-2: #fefcf4;
+	--steil-stage: #fefcf4;
+	--steil-line: rgba( 16, 24, 40, 0.12 );
 	--steil-radius: 14px;
 	--steil-btn-radius: 10px;
 	--steil-gap: 32px;
 	--steil-panel-w: 320px;
-	--steil-shadow: 0 1px 2px rgba( 17, 17, 20, 0.05 ), 0 12px 32px rgba( 17, 17, 20, 0.07 );
+	--steil-shadow: 0 1px 2px rgba( 16, 24, 40, 0.05 ), 0 12px 32px rgba( 16, 24, 40, 0.08 );
 
 	display: flex;
 	gap: var( --steil-gap );
@@ -356,15 +356,15 @@
 	/* Re-declare tokens: the modal is appended to <body>, outside .steil-cfg.
 	   The block copies any per-block overrides onto this element inline, so
 	   these are just the defaults. */
-	--steil-ink: #111114;
-	--steil-accent: #111114;
-	--steil-muted: #70707a;
+	--steil-ink: #101828;
+	--steil-accent: #e40014;
+	--steil-muted: #4a5565;
 	--steil-surface: #ffffff;
-	--steil-surface-2: #f3f3f1;
-	--steil-line: rgba( 17, 17, 20, 0.12 );
+	--steil-surface-2: #fefcf4;
+	--steil-line: rgba( 16, 24, 40, 0.12 );
 	--steil-radius: 14px;
 	--steil-btn-radius: 10px;
-	--steil-shadow: 0 1px 2px rgba( 17, 17, 20, 0.05 ), 0 12px 32px rgba( 17, 17, 20, 0.07 );
+	--steil-shadow: 0 1px 2px rgba( 16, 24, 40, 0.05 ), 0 12px 32px rgba( 16, 24, 40, 0.08 );
 
 	position: fixed;
 	inset: 0;
@@ -393,11 +393,11 @@
 	max-width: 440px;
 	max-height: 90vh;
 	overflow-y: auto;
-	background: #fff;
-	color: #1c1b1a;
-	border-radius: 18px;
+	background: var( --steil-surface );
+	color: var( --steil-ink );
+	border-radius: var( --steil-radius );
 	padding: 28px;
-	box-shadow: 0 24px 60px rgba( 0, 0, 0, 0.3 );
+	box-shadow: 0 24px 60px rgba( 16, 24, 40, 0.28 );
 	transform: translateY( 14px ) scale( 0.98 );
 	transition: transform 0.22s cubic-bezier( 0.22, 1, 0.36, 1 );
 
@@ -439,7 +439,7 @@
 	gap: 6px;
 	margin-bottom: 20px;
 	padding: 14px 16px;
-	background: #f6f6f4;
+	background: var( --steil-surface-2 );
 	border-radius: 12px;
 	font-size: 0.88rem;
 }
@@ -449,7 +449,7 @@
 	font-size: 0.72rem;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: #6b6b72;
+	color: var( --steil-muted );
 	margin-bottom: 4px;
 }
 
@@ -460,7 +460,7 @@
 }
 
 .steil-cfg__summary-key {
-	color: #6b6b72;
+	color: var( --steil-muted );
 }
 
 .steil-cfg__summary-val {
@@ -476,15 +476,15 @@
 .steil-cfg__input {
 	width: 100%;
 	padding: 12px 14px;
-	border: 1px solid rgba( 0, 0, 0, 0.14 );
+	border: 1px solid var( --steil-line );
 	border-radius: 10px;
 	font: inherit;
-	background: #fff;
+	background: var( --steil-surface );
 
 	&:focus {
 		outline: none;
-		border-color: #1c1b1a;
-		box-shadow: 0 0 0 3px rgba( 28, 27, 26, 0.12 );
+		border-color: var( --steil-accent );
+		box-shadow: 0 0 0 3px color-mix( in srgb, var( --steil-accent ) 20%, transparent );
 	}
 }
 
