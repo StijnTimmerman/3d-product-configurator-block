@@ -5,18 +5,26 @@
 
 .steil-cfg {
 	--steil-ink: #1c1b1a;
+	--steil-accent: #1c1b1a;
 	--steil-muted: #6b6b72;
 	--steil-surface: #ffffff;
 	--steil-surface-2: #f6f6f4;
+	--steil-stage: var( --steil-surface-2 );
 	--steil-line: rgba( 0, 0, 0, 0.1 );
 	--steil-radius: 16px;
+	--steil-btn-radius: 10px;
+	--steil-gap: 28px;
+	--steil-panel-w: 300px;
 	--steil-shadow: 0 1px 2px rgba( 0, 0, 0, 0.04 ), 0 8px 24px rgba( 0, 0, 0, 0.06 );
 
 	display: flex;
-	gap: 28px;
+	gap: var( --steil-gap );
 	width: 100%;
 	box-sizing: border-box;
 	color: var( --steil-ink );
+	font-size: 15px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
 
 	* {
 		box-sizing: border-box;
@@ -31,8 +39,8 @@
 			min-width: 0;
 		}
 		.steil-cfg__panel {
-			flex: 0 0 300px;
-			max-width: 300px;
+			flex: 0 0 var( --steil-panel-w );
+			max-width: var( --steil-panel-w );
 		}
 	}
 
@@ -51,8 +59,9 @@
 		border-radius: var( --steil-radius );
 		overflow: hidden;
 		background:
-			radial-gradient( circle at 30% 20%, rgba( 0, 0, 0, 0.015 ), transparent 70% ),
-			var( --steil-surface-2 );
+			radial-gradient( circle at 30% 18%, rgba( 0, 0, 0, 0.02 ), transparent 70% ),
+			var( --steil-stage );
+		border: 1px solid var( --steil-line );
 	}
 
 	&__canvas {
@@ -141,12 +150,12 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var( --steil-ink );
+			outline: 2px solid var( --steil-accent );
 			outline-offset: 2px;
 		}
 
 		&.is-on {
-			background: var( --steil-ink );
+			background: var( --steil-accent );
 
 			&::after {
 				transform: translateX( 18px );
@@ -194,12 +203,12 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var( --steil-ink );
+			outline: 2px solid var( --steil-accent );
 			outline-offset: 2px;
 		}
 
 		&.is-active {
-			box-shadow: 0 0 0 2px var( --steil-ink );
+			box-shadow: 0 0 0 2px var( --steil-accent );
 
 			&::after {
 				opacity: 1;
@@ -232,12 +241,12 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var( --steil-ink );
+			outline: 2px solid var( --steil-accent );
 			outline-offset: 2px;
 		}
 
 		&.is-active {
-			box-shadow: 0 0 0 2px var( --steil-ink );
+			box-shadow: 0 0 0 2px var( --steil-accent );
 		}
 	}
 
@@ -267,7 +276,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var( --steil-ink );
+			outline: 2px solid var( --steil-accent );
 			outline-offset: 2px;
 		}
 
@@ -289,7 +298,7 @@
 	&__btn {
 		flex: 1 1 auto;
 		padding: 13px 22px;
-		border-radius: 10px;
+		border-radius: var( --steil-btn-radius );
 		font-size: 0.95rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -301,7 +310,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var( --steil-ink );
+			outline: 2px solid var( --steil-accent );
 			outline-offset: 2px;
 		}
 
@@ -312,7 +321,7 @@
 		}
 
 		&--primary {
-			background: var( --steil-ink );
+			background: var( --steil-accent );
 			color: #fff;
 			box-shadow: 0 4px 14px rgba( 0, 0, 0, 0.18 );
 

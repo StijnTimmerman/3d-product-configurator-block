@@ -45,6 +45,50 @@
 		"controlsPosition": {
 			"type": "string",
 			"default": "side"
+		},
+		"accentColor": {
+			"type": "string",
+			"default": ""
+		},
+		"textColor": {
+			"type": "string",
+			"default": ""
+		},
+		"panelColor": {
+			"type": "string",
+			"default": ""
+		},
+		"mutedColor": {
+			"type": "string",
+			"default": ""
+		},
+		"lineColor": {
+			"type": "string",
+			"default": ""
+		},
+		"stageBackground": {
+			"type": "string",
+			"default": ""
+		},
+		"cornerRadius": {
+			"type": "number",
+			"default": 0
+		},
+		"gap": {
+			"type": "number",
+			"default": 0
+		},
+		"panelWidth": {
+			"type": "number",
+			"default": 0
+		},
+		"buttonShape": {
+			"type": "string",
+			"default": ""
+		},
+		"shadow": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"editorScript": "file:./index.js",
