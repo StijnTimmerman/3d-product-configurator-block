@@ -29,16 +29,41 @@ function buildPanel( root, data, engine ) {
 		const header = el( 'div', 'steil-cfg__row-head' );
 		header.appendChild( el( 'span', 'steil-cfg__label', part.label ) );
 		const swatches = el( 'div', 'steil-cfg__swatches' );
+		const textures = el( 'div', 'steil-cfg__textures' );
+		const hasTextures = !! ( part.textures && part.textures.length );
 
 		// Optional parts get an on/off switch; when off the part is hidden and
-		// its swatches are disabled.
+		// its colour/texture buttons are disabled.
 		const reflectVisible = ( on ) => {
 			row.classList.toggle( 'is-off', ! on );
+			[ swatches, textures ].forEach( ( group ) =>
+				group.querySelectorAll( 'button' ).forEach( ( b ) => {
+					b.disabled = ! on;
+				} )
+			);
+		};
+
+		// A part shows either a colour or a texture; keep one active button
+		// across both groups in sync with the engine state.
+		const reflectActive = () => {
+			const st = engine.getState();
+			const activeTex = st.textures ? st.textures[ part.key ] : null;
 			swatches
 				.querySelectorAll( '.steil-cfg__swatch' )
-				.forEach( ( s ) => {
-					s.disabled = ! on;
-				} );
+				.forEach( ( s ) =>
+					s.classList.toggle(
+						'is-active',
+						! activeTex && s.dataset.color === st.parts[ part.key ]
+					)
+				);
+			textures
+				.querySelectorAll( '.steil-cfg__texture' )
+				.forEach( ( b ) =>
+					b.classList.toggle(
+						'is-active',
+						activeTex === b.dataset.texture
+					)
+				);
 		};
 
 		if ( part.optional ) {
@@ -64,22 +89,39 @@ function buildPanel( root, data, engine ) {
 		part.palette.forEach( ( swatch ) => {
 			const btn = el( 'button', 'steil-cfg__swatch' );
 			btn.type = 'button';
+			btn.dataset.color = swatch.name;
 			btn.style.background = swatch.hex;
 			btn.title = swatch.name;
 			btn.setAttribute( 'aria-label', `${ part.label }: ${ swatch.name }` );
-			if ( engine.getState().parts[ part.key ] === swatch.name ) {
-				btn.classList.add( 'is-active' );
-			}
 			btn.addEventListener( 'click', () => {
 				engine.setColor( part.key, swatch.name );
-				swatches
-					.querySelectorAll( '.steil-cfg__swatch' )
-					.forEach( ( s ) => s.classList.remove( 'is-active' ) );
-				btn.classList.add( 'is-active' );
+				reflectActive();
 			} );
 			swatches.appendChild( btn );
 		} );
 		row.appendChild( swatches );
+
+		// Texture buttons (thumbnails). Choosing one replaces the colour.
+		if ( hasTextures ) {
+			part.textures.forEach( ( tex ) => {
+				const btn = el( 'button', 'steil-cfg__texture' );
+				btn.type = 'button';
+				btn.dataset.texture = tex.name;
+				btn.title = tex.name;
+				btn.setAttribute( 'aria-label', `${ part.label }: ${ tex.name }` );
+				if ( tex.url ) {
+					btn.style.backgroundImage = `url("${ tex.url }")`;
+				}
+				btn.addEventListener( 'click', () => {
+					engine.setTexture( part.key, tex.name );
+					reflectActive();
+				} );
+				textures.appendChild( btn );
+			} );
+			row.appendChild( textures );
+		}
+
+		reflectActive();
 		if ( part.optional ) {
 			reflectVisible( engine.getState().visible[ part.key ] !== false );
 		}
@@ -145,7 +187,8 @@ function currentSelection( data, engine ) {
 			selection[ part.label ] = t( 'notIncluded', 'Not included' );
 			return;
 		}
-		selection[ part.label ] = state.parts[ part.key ];
+		const texName = state.textures ? state.textures[ part.key ] : null;
+		selection[ part.label ] = texName || state.parts[ part.key ];
 	} );
 	const finish =
 		data.config.finishes &&

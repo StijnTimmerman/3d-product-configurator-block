@@ -72,11 +72,12 @@ export function createConfigurator( canvas, config ) {
 
 	const initialVisible = ( p ) => ( p.optional ? p.default_on !== false : true );
 
-	const state = { parts: {}, finish: defaultFinish, visible: {} };
+	const state = { parts: {}, finish: defaultFinish, visible: {}, textures: {} };
 	parts.forEach( ( p ) => {
 		state.parts[ p.key ] =
 			p.default || ( p.palette[ 0 ] && p.palette[ 0 ].name ) || '';
 		state.visible[ p.key ] = initialVisible( p );
+		state.textures[ p.key ] = p.default_texture || null;
 	} );
 
 	const listeners = new Set();
@@ -85,6 +86,7 @@ export function createConfigurator( canvas, config ) {
 		parts: { ...state.parts },
 		finish: state.finish,
 		visible: { ...state.visible },
+		textures: { ...state.textures },
 	} );
 
 	const renderer = new THREE.WebGLRenderer( {
@@ -144,6 +146,9 @@ export function createConfigurator( canvas, config ) {
 	// a whole part can be shown/hidden.
 	const partMaterials = {};
 	const partMeshes = {};
+	// The model's own base map per part, so clearing a chosen texture can put
+	// the original surface back.
+	const originalMap = {};
 
 	const applyVisible = ( partKey, on ) => {
 		( partMeshes[ partKey ] || [] ).forEach( ( mesh ) => {
@@ -163,8 +168,45 @@ export function createConfigurator( canvas, config ) {
 				}
 			} );
 		}
+		originalMap[ part.key ] = mat.map || null;
 		Object.assign( mat, finishPreset( state.finish ) );
 		return mat;
+	};
+
+	// Load (and cache) a repeating colour texture from a URL.
+	const texLoader = new THREE.TextureLoader();
+	const textureCache = {};
+	const loadTexture = ( url, repeat ) => {
+		if ( ! textureCache[ url ] ) {
+			const tex = texLoader.load( url );
+			tex.wrapS = THREE.RepeatWrapping;
+			tex.wrapT = THREE.RepeatWrapping;
+			tex.colorSpace = THREE.SRGBColorSpace;
+			tex.repeat.set( repeat || 1, repeat || 1 );
+			textureCache[ url ] = tex;
+		}
+		return textureCache[ url ];
+	};
+
+	// Put a part's material in the state it should be: a chosen texture (colour
+	// washed to white so the texture reads true) or its selected colour.
+	const refreshAppearance = ( part ) => {
+		const mat = partMaterials[ part.key ];
+		if ( ! mat ) {
+			return;
+		}
+		const texName = state.textures[ part.key ];
+		const texDef =
+			texName &&
+			( part.textures || [] ).find( ( t ) => t.name === texName );
+		if ( texDef && texDef.url ) {
+			mat.map = loadTexture( texDef.url, texDef.repeat );
+			mat.color.setHex( 0xffffff );
+		} else {
+			mat.map = originalMap[ part.key ] || null;
+			mat.color.setHex( colourOf( part, state.parts[ part.key ] ) );
+		}
+		mat.needsUpdate = true;
 	};
 
 	function finishPreset( name ) {
@@ -265,8 +307,12 @@ export function createConfigurator( canvas, config ) {
 					( partMeshes[ part.key ] = [] ) ).push( node );
 			}
 		} );
-		// Apply the initial per-part visibility (optional parts may start off).
-		parts.forEach( ( p ) => applyVisible( p.key, state.visible[ p.key ] ) );
+		// Apply the initial per-part visibility (optional parts may start off)
+		// and any default texture.
+		parts.forEach( ( p ) => {
+			applyVisible( p.key, state.visible[ p.key ] );
+			refreshAppearance( p );
+		} );
 		scene.add( model );
 		centreAndMeasure( model );
 		fitCamera();
@@ -284,7 +330,18 @@ export function createConfigurator( canvas, config ) {
 				return;
 			}
 			state.parts[ partKey ] = name;
-			partMaterials[ partKey ].color.setHex( colourOf( part, name ) );
+			// Choosing a colour clears any texture on this part.
+			state.textures[ partKey ] = null;
+			refreshAppearance( part );
+			emit();
+		},
+		setTexture( partKey, name ) {
+			const part = parts.find( ( p ) => p.key === partKey );
+			if ( ! part || ! partMaterials[ partKey ] ) {
+				return;
+			}
+			state.textures[ partKey ] = name || null;
+			refreshAppearance( part );
 			emit();
 		},
 		setFinish( name ) {
@@ -307,11 +364,12 @@ export function createConfigurator( canvas, config ) {
 		},
 		reset() {
 			parts.forEach( ( p ) => {
-				this.setColor(
-					p.key,
-					p.default || ( p.palette[ 0 ] && p.palette[ 0 ].name )
-				);
-				this.setVisible( p.key, initialVisible( p ) );
+				state.parts[ p.key ] =
+					p.default || ( p.palette[ 0 ] && p.palette[ 0 ].name ) || '';
+				state.textures[ p.key ] = p.default_texture || null;
+				state.visible[ p.key ] = initialVisible( p );
+				applyVisible( p.key, state.visible[ p.key ] );
+				refreshAppearance( p );
 			} );
 			this.setFinish( defaultFinish );
 		},

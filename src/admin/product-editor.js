@@ -90,6 +90,10 @@ function init() {
 			if ( p.default ) {
 				previewEngine.setColor( p.key, p.default );
 			}
+			// setColor clears the texture, so re-apply the default one after.
+			if ( p.default_texture ) {
+				previewEngine.setTexture( p.key, p.default_texture );
+			}
 		} );
 		if ( state.default_finish ) {
 			previewEngine.setFinish( state.default_finish );
@@ -215,6 +219,30 @@ function init() {
 			render();
 			buildPreview();
 			introspect( att.url );
+		} );
+		frame.open();
+	}
+
+	function openTextureMedia( part ) {
+		if ( ! window.wp || ! window.wp.media ) {
+			return;
+		}
+		const frame = window.wp.media( {
+			title: __( 'Select or upload a texture image', 'steil-3d-configurator' ),
+			button: { text: __( 'Use this texture', 'steil-3d-configurator' ) },
+			library: { type: 'image' },
+			multiple: false,
+		} );
+		frame.on( 'select', () => {
+			const att = frame.state().get( 'selection' ).first().toJSON();
+			part.textures = Array.isArray( part.textures ) ? part.textures : [];
+			part.textures.push( {
+				name: att.title || __( 'Texture', 'steil-3d-configurator' ),
+				id: att.id,
+				url: att.url,
+				repeat: 1,
+			} );
+			render();
 		} );
 		frame.open();
 	}
@@ -373,6 +401,78 @@ function init() {
 		sel.addEventListener( 'change', () => { part.default = sel.value; sync(); } );
 		def.appendChild( sel );
 		card.appendChild( def );
+
+		// Textures: visitors pick a colour OR a texture on this part.
+		part.textures = Array.isArray( part.textures ) ? part.textures : [];
+		const texWrap = el( 'div', 'steil-pe__textures' );
+		texWrap.appendChild(
+			el( 'span', 'steil-pe__muted', __( 'Textures (optional) — visitors pick a colour or a texture.', 'steil-3d-configurator' ) )
+		);
+		part.textures.forEach( ( tex, ti ) => {
+			const item = el( 'div', 'steil-pe__texture-edit' );
+			const thumb = el( 'span', 'steil-pe__texture-thumb' );
+			if ( tex.url ) {
+				thumb.style.backgroundImage = 'url("' + resolveUrl( tex.url ) + '")';
+			}
+			const name = el( 'input', 'steil-pe__swatch-name' );
+			name.type = 'text';
+			name.value = tex.name || '';
+			name.placeholder = __( 'Name', 'steil-3d-configurator' );
+			name.addEventListener( 'input', () => { tex.name = name.value; sync(); } );
+			const rep = el( 'input', 'steil-pe__texture-repeat' );
+			rep.type = 'number';
+			rep.step = '0.5';
+			rep.min = '0.1';
+			rep.value = tex.repeat || 1;
+			rep.title = __( 'Repeat (tiling)', 'steil-3d-configurator' );
+			rep.addEventListener( 'input', () => { tex.repeat = parseFloat( rep.value ) || 1; sync(); } );
+			const rm = el( 'button', 'button-link-delete', '×' );
+			rm.type = 'button';
+			rm.addEventListener( 'click', ( e ) => {
+				e.preventDefault();
+				part.textures.splice( ti, 1 );
+				if ( part.default_texture === tex.name ) {
+					part.default_texture = '';
+				}
+				render();
+			} );
+			item.append( thumb, name, rep, rm );
+			texWrap.appendChild( item );
+		} );
+		const addTex = el( 'button', 'button', __( '+ Texture', 'steil-3d-configurator' ) );
+		addTex.type = 'button';
+		addTex.addEventListener( 'click', ( e ) => {
+			e.preventDefault();
+			openTextureMedia( part );
+		} );
+		texWrap.appendChild( addTex );
+		card.appendChild( texWrap );
+
+		if ( part.textures.length ) {
+			const defTex = el( 'label', 'steil-pe__default' );
+			defTex.appendChild( el( 'span', null, __( 'Starts with:', 'steil-3d-configurator' ) ) );
+			const texSel = el( 'select' );
+			const none = el( 'option', null, __( 'Colour', 'steil-3d-configurator' ) );
+			none.value = '';
+			texSel.appendChild( none );
+			part.textures.forEach( ( tex ) => {
+				const opt = el( 'option', null, tex.name );
+				opt.value = tex.name;
+				if ( tex.name === part.default_texture ) {
+					opt.selected = true;
+				}
+				texSel.appendChild( opt );
+			} );
+			texSel.addEventListener( 'change', () => {
+				part.default_texture = texSel.value;
+				sync();
+				if ( previewEngine ) {
+					previewEngine.setTexture( part.key, texSel.value || null );
+				}
+			} );
+			defTex.appendChild( texSel );
+			card.appendChild( defTex );
+		}
 
 		// Optional part: visitors can toggle it on/off in the configurator.
 		const opts = el( 'div', 'steil-pe__row steil-pe__optional' );

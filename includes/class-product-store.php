@@ -38,7 +38,45 @@ class Product_Store {
 		$config['title']     = get_the_title( $post_id );
 		$config['model_url'] = self::resolve_model_url( $config );
 
+		// Resolve each part's texture URLs (attachment id or plugin: marker) to
+		// absolute URLs for the front-end engine.
+		if ( ! empty( $config['parts'] ) && is_array( $config['parts'] ) ) {
+			foreach ( $config['parts'] as &$part ) {
+				if ( empty( $part['textures'] ) || ! is_array( $part['textures'] ) ) {
+					continue;
+				}
+				foreach ( $part['textures'] as &$texture ) {
+					$texture['url'] = self::resolve_asset_url(
+						isset( $texture['id'] ) ? (int) $texture['id'] : 0,
+						isset( $texture['url'] ) ? (string) $texture['url'] : ''
+					);
+				}
+				unset( $texture );
+			}
+			unset( $part );
+		}
+
 		return $config;
+	}
+
+	/**
+	 * Resolve an asset from an attachment id or a plugin:/explicit URL.
+	 *
+	 * @param int    $attachment_id Attachment id (0 if none).
+	 * @param string $url           Stored URL or plugin: marker.
+	 * @return string
+	 */
+	public static function resolve_asset_url( $attachment_id, $url ) {
+		if ( $attachment_id > 0 ) {
+			$resolved = wp_get_attachment_url( $attachment_id );
+			if ( $resolved ) {
+				return $resolved;
+			}
+		}
+		if ( 0 === strpos( $url, 'plugin:' ) ) {
+			return STEIL_CFG_URL . ltrim( substr( $url, 7 ), '/' );
+		}
+		return $url ? esc_url_raw( $url ) : '';
 	}
 
 	/**
@@ -160,29 +198,55 @@ class Product_Store {
 			),
 		);
 
+		$wood   = array(
+			array(
+				'name'   => __( 'Walnut wood', 'steil-3d-configurator' ),
+				'id'     => 0,
+				'url'    => 'plugin:assets/textures/walnut.png',
+				'repeat' => 2.0,
+			),
+		);
+		$weaves = array(
+			array(
+				'name'   => __( 'Linen', 'steil-3d-configurator' ),
+				'id'     => 0,
+				'url'    => 'plugin:assets/textures/linen.png',
+				'repeat' => 3.0,
+			),
+			array(
+				'name'   => __( 'Denim', 'steil-3d-configurator' ),
+				'id'     => 0,
+				'url'    => 'plugin:assets/textures/denim.png',
+				'repeat' => 3.0,
+			),
+		);
+
 		$config                = self::default_config();
 		$config['model_url']   = 'plugin:assets/models/lounge-chair.glb';
 		$config['parts']       = array(
 			array(
-				'key'     => 'frame',
-				'label'   => __( 'Frame', 'steil-3d-configurator' ),
-				'match'   => array( 'frame', 'leg' ),
-				'palette' => $frame,
-				'default' => 'Walnut',
+				'key'      => 'frame',
+				'label'    => __( 'Frame', 'steil-3d-configurator' ),
+				'match'    => array( 'frame', 'leg' ),
+				'palette'  => $frame,
+				'textures' => $wood,
+				'default'  => 'Walnut',
 			),
 			array(
-				'key'     => 'seat',
-				'label'   => __( 'Seat', 'steil-3d-configurator' ),
-				'match'   => array( 'seat' ),
-				'palette' => $fabric,
-				'default' => 'Charcoal',
+				'key'      => 'seat',
+				'label'    => __( 'Seat', 'steil-3d-configurator' ),
+				'match'    => array( 'seat' ),
+				'palette'  => $fabric,
+				'textures' => $weaves,
+				'default'  => 'Charcoal',
 			),
 			array(
-				'key'     => 'back',
-				'label'   => __( 'Backrest', 'steil-3d-configurator' ),
-				'match'   => array( 'back' ),
-				'palette' => $fabric,
-				'default' => 'Charcoal',
+				'key'      => 'back',
+				'label'    => __( 'Backrest', 'steil-3d-configurator' ),
+				'match'    => array( 'back' ),
+				'palette'  => $fabric,
+				'textures' => $weaves,
+				'default'  => 'Charcoal',
 			),
 		);
 		$config['background'] = 'transparent';
@@ -235,14 +299,39 @@ class Product_Store {
 						}
 					}
 				}
+				$textures = array();
+				if ( isset( $part['textures'] ) && is_array( $part['textures'] ) ) {
+					foreach ( $part['textures'] as $texture ) {
+						$id  = isset( $texture['id'] ) ? absint( $texture['id'] ) : 0;
+						$url = isset( $texture['url'] ) ? (string) $texture['url'] : '';
+						if ( 0 === strpos( $url, 'plugin:' ) ) {
+							$url = sanitize_text_field( $url );
+						} else {
+							$url = esc_url_raw( $url );
+						}
+						if ( ! $id && ! $url ) {
+							continue;
+						}
+						$repeat     = isset( $texture['repeat'] ) ? (float) $texture['repeat'] : 1.0;
+						$repeat     = max( 0.1, min( 20.0, $repeat ) );
+						$textures[] = array(
+							'name'   => sanitize_text_field( isset( $texture['name'] ) ? $texture['name'] : __( 'Texture', 'steil-3d-configurator' ) ),
+							'id'     => $id,
+							'url'    => $url,
+							'repeat' => $repeat,
+						);
+					}
+				}
 				$out['parts'][] = array(
-					'key'        => sanitize_key( $part['key'] ),
-					'label'      => sanitize_text_field( isset( $part['label'] ) ? $part['label'] : $part['key'] ),
-					'match'      => $match,
-					'palette'    => $palette,
-					'default'    => sanitize_text_field( isset( $part['default'] ) ? $part['default'] : '' ),
-					'optional'   => ! empty( $part['optional'] ),
-					'default_on' => ! isset( $part['default_on'] ) || (bool) $part['default_on'],
+					'key'             => sanitize_key( $part['key'] ),
+					'label'           => sanitize_text_field( isset( $part['label'] ) ? $part['label'] : $part['key'] ),
+					'match'           => $match,
+					'palette'         => $palette,
+					'textures'        => $textures,
+					'default'         => sanitize_text_field( isset( $part['default'] ) ? $part['default'] : '' ),
+					'default_texture' => sanitize_text_field( isset( $part['default_texture'] ) ? $part['default_texture'] : '' ),
+					'optional'        => ! empty( $part['optional'] ),
+					'default_on'      => ! isset( $part['default_on'] ) || (bool) $part['default_on'],
 				);
 			}
 		}

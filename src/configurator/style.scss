@@ -100,7 +100,8 @@
 		flex-direction: column;
 		gap: 10px;
 
-		&.is-off .steil-cfg__swatches {
+		&.is-off .steil-cfg__swatches,
+		&.is-off .steil-cfg__textures {
 			opacity: 0.4;
 			pointer-events: none;
 		}
@@ -203,6 +204,40 @@
 			&::after {
 				opacity: 1;
 			}
+		}
+	}
+
+	/* ---- texture swatches (thumbnails) ---- */
+	&__textures {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 10px;
+	}
+
+	&__texture {
+		width: 44px;
+		height: 44px;
+		border-radius: 10px;
+		border: 1px solid var( --steil-line );
+		padding: 0;
+		cursor: pointer;
+		background-color: var( --steil-surface-2 );
+		background-size: cover;
+		background-position: center;
+		transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+		&:hover {
+			transform: translateY( -2px );
+		}
+
+		&:focus-visible {
+			outline: 2px solid var( --steil-ink );
+			outline-offset: 2px;
+		}
+
+		&.is-active {
+			box-shadow: 0 0 0 2px var( --steil-ink );
 		}
 	}
 

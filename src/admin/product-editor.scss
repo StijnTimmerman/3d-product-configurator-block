@@ -100,6 +100,38 @@
 		font-weight: 600;
 	}
 
+	.steil-pe__textures {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		align-items: center;
+		margin: 10px 0;
+	}
+
+	.steil-pe__texture-edit {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		border: 1px solid #e2e4e7;
+		border-radius: 6px;
+		padding: 4px 6px;
+	}
+
+	.steil-pe__texture-thumb {
+		width: 34px;
+		height: 34px;
+		border-radius: 5px;
+		border: 1px solid #dcdcde;
+		background-color: #f0f0f1;
+		background-size: cover;
+		background-position: center;
+		flex: 0 0 auto;
+	}
+
+	.steil-pe__texture-repeat {
+		width: 64px;
+	}
+
 	.button-link-delete {
 		background: none;
 		border: 0;
