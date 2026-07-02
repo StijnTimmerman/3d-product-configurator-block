@@ -4,7 +4,7 @@ Tags: 3d, configurator, gutenberg, block, product
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,13 @@ To the site admin email by default. Use the `steil_cfg_quote_recipient` filter t
 
 == Changelog ==
 
+= 1.1.0 =
+* Textures: upload textures and assign them per part, with three bundled demo textures on the sample product. Visitors pick a colour or a texture.
+* Optional parts: mark a part optional so visitors can toggle it on/off; hidden parts are left out of the quote.
+* Adjustable styling per block: colours, corner radius, shadow, spacing, panel width, button shape and stage background in the block sidebar.
+* Refreshed default look and a custom block icon.
+* Wider default layout and improved camera framing so the model always sits nicely in view.
+
 = 1.0.1 =
 * New custom 3D-cube block icon in the editor, replacing the generic art icon.
 
@@ -55,6 +62,9 @@ To the site admin email by default. Use the `steil_cfg_quote_recipient` filter t
 * Initial release: configurator block, glTF/GLB + FBX upload, part mapping, palettes, finishes, quote request with screenshot, bundled sample product.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds textures, optional parts and per-block styling controls. Existing products keep working unchanged.
 
 = 1.0.1 =
 Fresh block icon; no functional changes.
